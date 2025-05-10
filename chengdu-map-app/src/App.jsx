@@ -6,7 +6,7 @@ import mqtt from 'mqtt'; // Corrected MQTT import
 
 // --- MQTT 配置 ---
 // 使用 EMQX 公共 Broker (非加密 WebSocket)
-const MQTT_BROKER_URL = 'ws://broker.emqx.io:8083/mqtt'; // WebSocket Port for EMQX public broker
+const MQTT_BROKER_URL = 'wss://broker.emqx.io:8084/mqtt'; // WebSocket Port for EMQX public broker
 // !!! 请根据您的实际情况替换为您发布 GPS 数据的主题 !!!
 const GPS_DATA_TOPIC = 'user/gps/realtime_track'; // 示例主题，请确保您的发布者使用此主题
 

@@ -6,7 +6,7 @@ import Joystick from './Joystick'; // 导入摇杆组件
 import './App.css'; // 主应用样式 (与之前的按钮版本遥控器使用相同的 App.css)
 
 // --- MQTT 配置 ---
-const MQTT_BROKER_URL = 'ws://broker.emqx.io:8083/mqtt';
+const MQTT_BROKER_URL = 'wss://broker.emqx.io:8084/mqtt';
 const DEFAULT_COMMAND_TOPIC = 'user/gps/realtime_track'; // 默认主题，与地图应用一致
 
 // --- GPS 模拟配置 ---
