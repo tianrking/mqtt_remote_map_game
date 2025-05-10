@@ -1,116 +1,400 @@
-/* src/App.css */
+/* src/App.css for MQTT Map Application */
 
-/* 1. 基本重置和全屏设置 */
+/* --- 全局和根元素样式 --- */
 html,
 body,
-#root { /* #root 是 React 应用通常挂载的 div 的 id */
-    height: 100%;
-    width: 100%;
-    margin: 0;
-    padding: 0;
-    overflow: hidden; /* 防止因微小误差导致出现滚动条 */
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
-    background-color: #f0f0f0; /* 页面最外层背景色，理论上不应看见 */
-    box-sizing: border-box;
+#root { /* React 应用通常挂载的 div 的 id */
+  height: 100%;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden; /* 防止不必要的滚动条 */
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* 现代字体栈 */
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); /* 深邃的蓝灰色渐变背景 */
+  color: #e2e8f0; /* 默认浅色文字 */
+  box-sizing: border-box;
 }
 
 *, *::before, *::after {
-    box-sizing: inherit; /* 让所有元素继承 html/body 的 box-sizing */
+  box-sizing: inherit;
 }
 
-/* 2. 主应用容器 */
+/* --- 主应用容器 --- */
 .main-container {
-    display: flex;
-    flex-direction: column; /* 垂直排列：页眉、地图、页脚 */
-    height: 100%; /* 占满 #root 的全部高度 */
-    width: 100%;  /* 占满 #root 的全部宽度 */
-    background-color: #ffffff; /* 应用内容的背景色 */
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+  /* background-color: rgba(30, 41, 59, 0.8); */ /* 可选：给主容器一个轻微的背景 */
 }
 
-/* 3. 页眉样式 */
+/* --- 页眉样式 --- */
 .map-header {
-    flex-shrink: 0; /* 防止页眉在内容过多时被压缩 */
-    padding: 0.75rem 1rem; /* 调整内边距以适应全屏 */
-    text-align: center;
-    background-color: #ffffff;
-    border-bottom: 1px solid #e5e7eb; /* 细边框 */
-    width: 100%; /* 确保页眉占满全部宽度 */
+  flex-shrink: 0; /* 防止页眉被压缩 */
+  padding: 1rem 1.5rem; /* 调整内边距 */
+  text-align: center;
+  background-color: rgba(26, 32, 44, 0.85); /* 半透明深色背景 */
+  backdrop-filter: blur(5px); /* 轻微毛玻璃效果 */
+  -webkit-backdrop-filter: blur(5px);
+  border-bottom: 1px solid rgba(71, 85, 105, 0.5); /* 分割线 */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  z-index: 100; /* 确保页眉在地图控件之上，但低于 MQTT 状态 (如果需要) */
 }
 
 .map-title {
-    font-size: 1.25rem; /* 调整字号 */
-    line-height: 1.75rem;
-    font-weight: 600; /* semi-bold */
-    color: #1f2937;
-    margin: 0;
+  font-size: 1.75rem; /* 调整标题大小 */
+  font-weight: 700;
+  color: #7dd3fc; /* 明亮的天蓝色 */
+  margin: 0 0 0.2rem 0;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.4);
 }
 
 .map-subtitle {
-    font-size: 0.8rem; /* 调整字号 */
-    line-height: 1.1rem;
-    color: #4b5563;
-    margin-top: 0.15rem;
+  font-size: 0.85rem;
+  color: #94a3b8; /* 稍亮的灰色文字 */
+  margin: 0;
 }
 
-/* 4. 地图容器包装器 - 这是关键，它需要填满剩余空间 */
+/* --- 地图容器包装器 --- */
+/* 这个容器在 App.jsx 中是 MapDisplay 组件的根 div */
+/* 它内部直接包含 .map-element 和加载动画、MQTT状态显示 */
 .map-container-wrapper {
-    flex-grow: 1; /* 核心：让此容器占据所有可用的垂直空间 */
-    position: relative; /* 用于加载动画的定位 */
-    width: 100%;    /* 确保占据其父容器的全部宽度 */
-    overflow: hidden; /* 裁剪地图可能产生的微小溢出 */
-    margin: 0;
-    padding: 0;
-    /* background-color: lightgreen; */ /* 调试时使用，确保此容器填满 */
+  flex-grow: 1; /* 占据所有可用的垂直空间 */
+  position: relative; /* 对于内部绝对定位的元素 (如加载动画、MQTT状态) 很重要 */
+  width: 100%;
+  overflow: hidden; /* 确保地图内容不会溢出 */
+  background-color: #111827; /* 地图下方的深色背景，以防瓦片加载慢 */
 }
 
-/* 5. 实际的地图 DOM 元素 */
+/* --- 实际的地图 DOM 元素 --- */
 .map-element {
-    height: 100%; /* 占满 .map-container-wrapper 的全部高度 */
-    width: 100%;  /* 占满 .map-container-wrapper 的全部宽度 */
-    margin: 0;
-    padding: 0;
-    /* background-color: lightblue; */ /* 调试时使用，确保此容器填满 */
+  height: 100%;
+  width: 100%;
+  background-color: #1e293b; /* 地图加载时的背景色 */
 }
 
-/* 6. 加载动画样式 */
+/* --- 加载动画样式 (Leaflet 瓦片加载时) --- */
 .loader {
-    border: 5px solid #f3f3f3;
-    border-top: 5px solid #3498db;
-    border-radius: 50%;
-    width: 40px; /* 略微减小加载动画大小 */
-    height: 40px;
-    animation: spin 1s linear infinite;
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    margin-top: -20px; /* (height/2) */
-    margin-left: -20px; /* (width/2) */
-    z-index: 10000;
+  border: 6px solid rgba(203, 213, 225, 0.2); /* 浅灰色半透明边框 */
+  border-top: 6px solid #38bdf8; /* 天蓝色旋转部分 */
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  animation: spin 1.2s linear infinite;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  margin-top: -25px; /* (height/2) */
+  margin-left: -25px; /* (width/2) */
+  z-index: 450; /* 确保在地图瓦片之上，但在 MQTT 状态之下 */
 }
 
 @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 
-/* 7. 页脚样式 */
+/* --- MQTT 状态显示的美化 --- */
+/* App.jsx 中 MapDisplay 组件内部的 style 对象会被这里的 CSS 覆盖或补充 */
+/* 为了更好地控制，我们可以给它一个类名，或者直接针对其 style 属性进行增强 */
+/* 假设我们在 App.jsx 中给 MQTT 状态 div 添加一个类名 "mqtt-status-indicator" */
+.mqtt-status-indicator { /* 请在 App.jsx 中为 MQTT 状态 div 添加这个类名 */
+  position: absolute;
+  top: 15px; /* 从顶部调整距离 */
+  left: 15px;  /* 从左侧调整距离，避开 Leaflet 默认的缩放控件 */
+  z-index: 1001 !important; /* 最高层级，确保可见 */
+  background-color: rgba(30, 41, 59, 0.9) !important; /* 深色半透明背景 */
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+  padding: 0.5rem 1rem !important; /* 调整内边距 */
+  border-radius: 0.5rem !important; /* 圆角 */
+  box-shadow: 0 3px 8px rgba(0,0,0,0.3) !important;
+  font-size: 0.85rem !important; /* 调整字体大小 */
+  font-weight: 600 !important;
+  border: 1px solid rgba(71, 85, 105, 0.6) !important;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  /* color 属性在 App.jsx 中根据状态动态设置，这里不覆盖 */
+}
+/* 可以为不同状态的图标颜色（如果使用图标）进行特定设置 */
+.mqtt-status-indicator.status-connected-map .icon { color: #4ade80; }
+.mqtt-status-indicator.status-disconnected-map .icon { color: #f87171; }
+.mqtt-status-indicator.status-connecting-map .icon { color: #facc15; }
+
+
+/* --- 页脚样式 --- */
 .map-footer {
-    flex-shrink: 0; /* 防止页脚被压缩 */
-    padding: 0.5rem 1rem; /* 调整内边距 */
-    text-align: center;
-    color: #6b7280;
-    font-size: 0.7rem; /* 调整字号 */
-    line-height: 1rem;
-    background-color: #f8f9fa; /* 页脚背景色略有不同 */
-    border-top: 1px solid #e5e7eb; /* 细边框 */
-    width: 100%; /* 确保页脚占满全部宽度 */
+  flex-shrink: 0;
+  padding: 0.8rem 1.5rem; /* 调整内边距 */
+  text-align: center;
+  background-color: rgba(26, 32, 44, 0.85); /* 与页眉协调 */
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+  border-top: 1px solid rgba(71, 85, 105, 0.5);
+  box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.2);
+  z-index: 100;
 }
 
-/* Leaflet 弹出窗口美化 (保持不变) */
+.map-footer p {
+  margin: 0.2rem 0;
+  font-size: 0.75rem;
+  color: #94a3b8; /* 页脚文字颜色 */
+  line-height: 1.5;
+}
+
+/* --- Leaflet 控件美化 (可选) --- */
+.leaflet-control-container .leaflet-control-zoom {
+  border: 1px solid rgba(71, 85, 105, 0.5) !important;
+  border-radius: 0.5rem !important;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2) !important;
+}
+.leaflet-control-container .leaflet-control-zoom a {
+  background-color: rgba(45, 55, 72, 0.9) !important;
+  color: #cbd5e0 !important;
+  border-bottom: 1px solid rgba(71, 85, 105, 0.5) !important;
+}
+.leaflet-control-container .leaflet-control-zoom a:hover {
+  background-color: rgba(56, 189, 248, 0.9) !important;
+  color: white !important;
+}
+.leaflet-control-container .leaflet-control-zoom a.leaflet-disabled {
+  background-color: rgba(45, 55, 72, 0.7) !important;
+  color: #64748b !important;
+  cursor: not-allowed;
+}
+.leaflet-control-scale-line {
+  background-color: rgba(45, 55, 72, 0.8) !important;
+  border-color: rgba(100, 116, 139, 0.7) !important;
+  color: #cbd5e0 !important;
+  padding: 3px 6px !important;
+  border-radius: 3px !important;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+
+/* Leaflet 弹出窗口美化 */
 .leaflet-popup-content-wrapper {
-    border-radius: 0.5rem;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  background-color: rgba(30, 41, 59, 0.95) !important; /* 深色背景 */
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+  color: #e2e8f0 !important; /* 浅色文字 */
+  border-radius: 0.75rem !important; /* 圆角 */
+  box-shadow: 0 5px 15px rgba(0,0,0,0.3) !important;
+  border: 1px solid rgba(71, 85, 105, 0.6);
+}
+.leaflet-popup-content {
+  margin: 12px 18px !important; /* 调整内边距 */
+  font-size: 0.9rem;
+  line-height: 1.6;
 }
 .leaflet-popup-tip-container {
-    display: none;
+  display: none !important; /* 隐藏默认的尖角指示器，使其更简洁 */
+}
+.leaflet-popup-close-button {
+  color: #94a3b8 !important;
+  padding: 8px 8px 0 0 !important;
+}
+.leaflet-popup-close-button:hover {
+  color: #e2e8f0 !important;
+  background-color: transparent !important;
+}
+/* src/App.css for MQTT Map Application */
+
+/* --- 全局和根元素样式 --- */
+html,
+body,
+#root { /* React 应用通常挂载的 div 的 id */
+  height: 100%;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden; /* 防止不必要的滚动条 */
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* 现代字体栈 */
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); /* 深邃的蓝灰色渐变背景 */
+  color: #e2e8f0; /* 默认浅色文字 */
+  box-sizing: border-box;
+}
+
+*, *::before, *::after {
+  box-sizing: inherit;
+}
+
+/* --- 主应用容器 --- */
+.main-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+  /* background-color: rgba(30, 41, 59, 0.8); */ /* 可选：给主容器一个轻微的背景 */
+}
+
+/* --- 页眉样式 --- */
+.map-header {
+  flex-shrink: 0; /* 防止页眉被压缩 */
+  padding: 1rem 1.5rem; /* 调整内边距 */
+  text-align: center;
+  background-color: rgba(26, 32, 44, 0.85); /* 半透明深色背景 */
+  backdrop-filter: blur(5px); /* 轻微毛玻璃效果 */
+  -webkit-backdrop-filter: blur(5px);
+  border-bottom: 1px solid rgba(71, 85, 105, 0.5); /* 分割线 */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  z-index: 100; /* 确保页眉在地图控件之上，但低于 MQTT 状态 (如果需要) */
+}
+
+.map-title {
+  font-size: 1.75rem; /* 调整标题大小 */
+  font-weight: 700;
+  color: #7dd3fc; /* 明亮的天蓝色 */
+  margin: 0 0 0.2rem 0;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.4);
+}
+
+.map-subtitle {
+  font-size: 0.85rem;
+  color: #94a3b8; /* 稍亮的灰色文字 */
+  margin: 0;
+}
+
+/* --- 地图容器包装器 --- */
+/* 这个容器在 App.jsx 中是 MapDisplay 组件的根 div */
+/* 它内部直接包含 .map-element 和加载动画、MQTT状态显示 */
+.map-container-wrapper {
+  flex-grow: 1; /* 占据所有可用的垂直空间 */
+  position: relative; /* 对于内部绝对定位的元素 (如加载动画、MQTT状态) 很重要 */
+  width: 100%;
+  overflow: hidden; /* 确保地图内容不会溢出 */
+  background-color: #111827; /* 地图下方的深色背景，以防瓦片加载慢 */
+}
+
+/* --- 实际的地图 DOM 元素 --- */
+.map-element {
+  height: 100%;
+  width: 100%;
+  background-color: #1e293b; /* 地图加载时的背景色 */
+}
+
+/* --- 加载动画样式 (Leaflet 瓦片加载时) --- */
+.loader {
+  border: 6px solid rgba(203, 213, 225, 0.2); /* 浅灰色半透明边框 */
+  border-top: 6px solid #38bdf8; /* 天蓝色旋转部分 */
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  animation: spin 1.2s linear infinite;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  margin-top: -25px; /* (height/2) */
+  margin-left: -25px; /* (width/2) */
+  z-index: 450; /* 确保在地图瓦片之上，但在 MQTT 状态之下 */
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* --- MQTT 状态显示的美化 --- */
+/* App.jsx 中 MapDisplay 组件内部的 style 对象会被这里的 CSS 覆盖或补充 */
+/* 为了更好地控制，我们可以给它一个类名，或者直接针对其 style 属性进行增强 */
+/* 假设我们在 App.jsx 中给 MQTT 状态 div 添加一个类名 "mqtt-status-indicator" */
+.mqtt-status-indicator { /* 请在 App.jsx 中为 MQTT 状态 div 添加这个类名 */
+  position: absolute;
+  top: 15px; /* 从顶部调整距离 */
+  left: 15px;  /* 从左侧调整距离，避开 Leaflet 默认的缩放控件 */
+  z-index: 1001 !important; /* 最高层级，确保可见 */
+  background-color: rgba(30, 41, 59, 0.9) !important; /* 深色半透明背景 */
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+  padding: 0.5rem 1rem !important; /* 调整内边距 */
+  border-radius: 0.5rem !important; /* 圆角 */
+  box-shadow: 0 3px 8px rgba(0,0,0,0.3) !important;
+  font-size: 0.85rem !important; /* 调整字体大小 */
+  font-weight: 600 !important;
+  border: 1px solid rgba(71, 85, 105, 0.6) !important;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  /* color 属性在 App.jsx 中根据状态动态设置，这里不覆盖 */
+}
+/* 可以为不同状态的图标颜色（如果使用图标）进行特定设置 */
+.mqtt-status-indicator.status-connected-map .icon { color: #4ade80; }
+.mqtt-status-indicator.status-disconnected-map .icon { color: #f87171; }
+.mqtt-status-indicator.status-connecting-map .icon { color: #facc15; }
+
+
+/* --- 页脚样式 --- */
+.map-footer {
+  flex-shrink: 0;
+  padding: 0.8rem 1.5rem; /* 调整内边距 */
+  text-align: center;
+  background-color: rgba(26, 32, 44, 0.85); /* 与页眉协调 */
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+  border-top: 1px solid rgba(71, 85, 105, 0.5);
+  box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.2);
+  z-index: 100;
+}
+
+.map-footer p {
+  margin: 0.2rem 0;
+  font-size: 0.75rem;
+  color: #94a3b8; /* 页脚文字颜色 */
+  line-height: 1.5;
+}
+
+/* --- Leaflet 控件美化 (可选) --- */
+.leaflet-control-container .leaflet-control-zoom {
+  border: 1px solid rgba(71, 85, 105, 0.5) !important;
+  border-radius: 0.5rem !important;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2) !important;
+}
+.leaflet-control-container .leaflet-control-zoom a {
+  background-color: rgba(45, 55, 72, 0.9) !important;
+  color: #cbd5e0 !important;
+  border-bottom: 1px solid rgba(71, 85, 105, 0.5) !important;
+}
+.leaflet-control-container .leaflet-control-zoom a:hover {
+  background-color: rgba(56, 189, 248, 0.9) !important;
+  color: white !important;
+}
+.leaflet-control-container .leaflet-control-zoom a.leaflet-disabled {
+  background-color: rgba(45, 55, 72, 0.7) !important;
+  color: #64748b !important;
+  cursor: not-allowed;
+}
+.leaflet-control-scale-line {
+  background-color: rgba(45, 55, 72, 0.8) !important;
+  border-color: rgba(100, 116, 139, 0.7) !important;
+  color: #cbd5e0 !important;
+  padding: 3px 6px !important;
+  border-radius: 3px !important;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+
+/* Leaflet 弹出窗口美化 */
+.leaflet-popup-content-wrapper {
+  background-color: rgba(30, 41, 59, 0.95) !important; /* 深色背景 */
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+  color: #e2e8f0 !important; /* 浅色文字 */
+  border-radius: 0.75rem !important; /* 圆角 */
+  box-shadow: 0 5px 15px rgba(0,0,0,0.3) !important;
+  border: 1px solid rgba(71, 85, 105, 0.6);
+}
+.leaflet-popup-content {
+  margin: 12px 18px !important; /* 调整内边距 */
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+.leaflet-popup-tip-container {
+  display: none !important; /* 隐藏默认的尖角指示器，使其更简洁 */
+}
+.leaflet-popup-close-button {
+  color: #94a3b8 !important;
+  padding: 8px 8px 0 0 !important;
+}
+.leaflet-popup-close-button:hover {
+  color: #e2e8f0 !important;
+  background-color: transparent !important;
 }

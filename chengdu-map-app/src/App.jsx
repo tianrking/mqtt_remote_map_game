@@ -247,7 +247,7 @@ function App() {
         <div className="main-container">
             <header className="map-header">
                 <h1 className="map-title">探索成都 - 实时轨迹</h1>
-                <p className="map-subtitle">自定义高德瓦片地图 (React版 + MQTT)</p>
+                <p className="map-subtitle">自定义高德瓦片地图 </p>
             </header>
             <MapDisplay />
             <footer className="map-footer">
