@@ -251,10 +251,11 @@ function App() {
             </header>
             <MapDisplay />
             <footer className="map-footer">
-                <p>MQTT Broker: {brokerHost} (ws)</p> {/* 明确指出使用 ws */}
-                <p>GPS Topic: {GPS_DATA_TOPIC}</p>
+                {/* <p>MQTT Broker: {brokerHost} (ws)</p>  */}
+                {/* 明确指出使用 ws */}
+                {/* <p>GPS Topic: {GPS_DATA_TOPIC}</p>
                 <p>地图数据来源: 高德地图</p>
-                <p>使用 Leaflet.js, React, MQTT.js 构建</p>
+                <p>使用 Leaflet.js, React, MQTT.js 构建</p> */}
             </footer>
         </div>
     );
