@@ -1,0 +1,116 @@
+/* src/App.css */
+
+/* 1. 基本重置和全屏设置 */
+html,
+body,
+#root { /* #root 是 React 应用通常挂载的 div 的 id */
+    height: 100%;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    overflow: hidden; /* 防止因微小误差导致出现滚动条 */
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+    background-color: #f0f0f0; /* 页面最外层背景色，理论上不应看见 */
+    box-sizing: border-box;
+}
+
+*, *::before, *::after {
+    box-sizing: inherit; /* 让所有元素继承 html/body 的 box-sizing */
+}
+
+/* 2. 主应用容器 */
+.main-container {
+    display: flex;
+    flex-direction: column; /* 垂直排列：页眉、地图、页脚 */
+    height: 100%; /* 占满 #root 的全部高度 */
+    width: 100%;  /* 占满 #root 的全部宽度 */
+    background-color: #ffffff; /* 应用内容的背景色 */
+}
+
+/* 3. 页眉样式 */
+.map-header {
+    flex-shrink: 0; /* 防止页眉在内容过多时被压缩 */
+    padding: 0.75rem 1rem; /* 调整内边距以适应全屏 */
+    text-align: center;
+    background-color: #ffffff;
+    border-bottom: 1px solid #e5e7eb; /* 细边框 */
+    width: 100%; /* 确保页眉占满全部宽度 */
+}
+
+.map-title {
+    font-size: 1.25rem; /* 调整字号 */
+    line-height: 1.75rem;
+    font-weight: 600; /* semi-bold */
+    color: #1f2937;
+    margin: 0;
+}
+
+.map-subtitle {
+    font-size: 0.8rem; /* 调整字号 */
+    line-height: 1.1rem;
+    color: #4b5563;
+    margin-top: 0.15rem;
+}
+
+/* 4. 地图容器包装器 - 这是关键，它需要填满剩余空间 */
+.map-container-wrapper {
+    flex-grow: 1; /* 核心：让此容器占据所有可用的垂直空间 */
+    position: relative; /* 用于加载动画的定位 */
+    width: 100%;    /* 确保占据其父容器的全部宽度 */
+    overflow: hidden; /* 裁剪地图可能产生的微小溢出 */
+    margin: 0;
+    padding: 0;
+    /* background-color: lightgreen; */ /* 调试时使用，确保此容器填满 */
+}
+
+/* 5. 实际的地图 DOM 元素 */
+.map-element {
+    height: 100%; /* 占满 .map-container-wrapper 的全部高度 */
+    width: 100%;  /* 占满 .map-container-wrapper 的全部宽度 */
+    margin: 0;
+    padding: 0;
+    /* background-color: lightblue; */ /* 调试时使用，确保此容器填满 */
+}
+
+/* 6. 加载动画样式 */
+.loader {
+    border: 5px solid #f3f3f3;
+    border-top: 5px solid #3498db;
+    border-radius: 50%;
+    width: 40px; /* 略微减小加载动画大小 */
+    height: 40px;
+    animation: spin 1s linear infinite;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    margin-top: -20px; /* (height/2) */
+    margin-left: -20px; /* (width/2) */
+    z-index: 10000;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* 7. 页脚样式 */
+.map-footer {
+    flex-shrink: 0; /* 防止页脚被压缩 */
+    padding: 0.5rem 1rem; /* 调整内边距 */
+    text-align: center;
+    color: #6b7280;
+    font-size: 0.7rem; /* 调整字号 */
+    line-height: 1rem;
+    background-color: #f8f9fa; /* 页脚背景色略有不同 */
+    border-top: 1px solid #e5e7eb; /* 细边框 */
+    width: 100%; /* 确保页脚占满全部宽度 */
+}
+
+/* Leaflet 弹出窗口美化 (保持不变) */
+.leaflet-popup-content-wrapper {
+    border-radius: 0.5rem;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+.leaflet-popup-tip-container {
+    display: none;
+}
